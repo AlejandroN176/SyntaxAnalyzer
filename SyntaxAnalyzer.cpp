@@ -246,13 +246,14 @@ bool SyntaxAnalyzer::elsepart() {
     return true;
 }
 bool SyntaxAnalyzer::vdec() {
+
     while (tokitr != tokens.end() && *tokitr == "t_var") {
         tokitr++; lexitr++;
-        if (vars() == 1);
-            else {
-                return false;
-            }
+        if (vars() != 1) {
+            return false;
+        }
     }
+    return true;
 }
 
 bool SyntaxAnalyzer::ifstmt() {
@@ -340,11 +341,12 @@ bool SyntaxAnalyzer::parse() {
     tokitr = tokens.begin();
     lexitr = lexemes.begin();
     bool success = false;
-    if (tokitr != tokens.end() && vdec()) {
+    if (vdec()){
         if (tokitr != tokens.end() && *tokitr == "t_main") {
             tokitr++; lexitr++;
             if (tokitr != tokens.end() && *tokitr == "s_lbrace") {
                 tokitr++; lexitr++;
+                cout << "Vdec intialized and main{ intialized"<< endl;
                 // Calls stmtlist
                 if (tokitr != tokens.end() && stmtlist()) {
                     if (tokitr != tokens.end() && *tokitr == "s_rbrace") {
@@ -359,7 +361,7 @@ bool SyntaxAnalyzer::parse() {
                 cout << "Token/Lexime Pair that caused error: "<< *tokitr-- << " : " << *lexitr-- << endl;
                 return success;
             }
-        } else {
+        }else {
             cout << "Token/Lexime Pair that caused error: "<< *tokitr-- << " : " << *lexitr-- << endl;
             return success;
         }
