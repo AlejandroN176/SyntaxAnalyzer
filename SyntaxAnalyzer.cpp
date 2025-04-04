@@ -257,16 +257,36 @@ bool SyntaxAnalyzer::vdec() {
 }
 
 bool SyntaxAnalyzer::ifstmt() {
+    bool flag = false;
     if (tokitr != tokens.end() && *tokitr == "t_if"){
         tokitr++; lexitr++;
-        if (expr() && stmtlist() && elsepart()){
-            return true;
+        if (tokitr != tokens.end() && *tokitr == "s_lparen"){
+            tokitr++; lexitr++;
+            if (expr()){
+                tokitr++; lexitr++;
+                if (tokitr != tokens.end() && *tokitr == "s_rparen"){
+                    tokitr++; lexitr++;
+                    if (tokitr != tokens.end() && *tokitr == "s_lbrace"){
+                        tokitr++; lexitr++;
+                        if (stmtlist()){
+                            tokitr++; lexitr++;
+                            if (tokitr != tokens.end() && *tokitr == "s_rbrace"){
+                                //flag = true;
+                                if (elsepart()){ //my version - elsepart() always
+                                    //returns true
+                                    flag = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+
     }
     tokitr++;
-    return false;
+    return flag;
 }
-
 bool SyntaxAnalyzer::outputstmt() {
     if (tokitr != tokens.end() && *tokitr == "t_output") {
         tokitr++; lexitr++;
