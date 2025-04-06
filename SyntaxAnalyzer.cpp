@@ -169,13 +169,14 @@ bool SyntaxAnalyzer::logicop() {
     return false;
 }
 bool SyntaxAnalyzer::stmtlist() {
-    if (tokitr != tokens.end() && *tokitr == "s_lbrace" || *tokitr == "s_rbrace") {
+    while (tokitr != tokens.end()) {
+        if (stmt() == -1) {
+            return false;
+        }
         tokitr++; lexitr++;
         return true;
     }
-    else {
-        return false;
-    }
+    return false;
 }
 
 bool SyntaxAnalyzer::simpleexpr() {
@@ -187,6 +188,9 @@ bool SyntaxAnalyzer::simpleexpr() {
                     tokitr++; lexitr++;
                     return true;
                 }
+            }
+            else {
+                return true;
             }
         }
     return false;
@@ -290,14 +294,18 @@ bool SyntaxAnalyzer::ifstmt() {
 bool SyntaxAnalyzer::outputstmt() {
     if (tokitr != tokens.end() && *tokitr == "t_output") {
         tokitr++; lexitr++;
-        if (tokitr == tokens.end() && term()) {
+        if (tokitr != tokens.end() && *tokitr == "s_lparen") {
             tokitr++; lexitr++;
-            return true;
+        	if (tokitr != tokens.end() && expr() || *tokitr == "t_text") {
+            	tokitr++; lexitr++;
+            	if (tokitr != tokens.end() && *tokitr == "s_rparen") {
+            	    tokitr++; lexitr++;
+            	    return true;
+            	}
+        	}
         }
     }
-    else {
         return false;
-    }
 }
 
 bool SyntaxAnalyzer::relop() {
