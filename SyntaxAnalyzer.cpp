@@ -202,25 +202,29 @@ bool SyntaxAnalyzer::arithop() {
 bool SyntaxAnalyzer::assignstmt() {
     if (tokitr != tokens.end() && *tokitr == "t_id") {
         int found = symboltable.count(*lexitr);
-        tokitr++; lexitr++;
-        if (tokitr != tokens.end() && *tokitr == "s_assign"){
+        if (found != 0) {
             tokitr++; lexitr++;
-            if (tokitr != tokens.end() && expr()) {
-                return true;
+            if (tokitr != tokens.end() && *tokitr == "s_assign"){
+                tokitr++; lexitr++;
+                if (tokitr != tokens.end() && expr()) {
+                    return true;
+                }else {
+                    cout << "Error expected valid expression at line: "<< *lexitr << endl;
+                    return false;
+                }
             }else {
-                cout << "Error expected valid expression at line: "<< *lexitr << endl;
+                cout << "Error expected assignment symbol at line: "<< *lexitr << endl;
                 return false;
             }
-        }else {
-            cout << "Error expected assignment symbol at line: "<< *lexitr << endl;
+        } else {
+            cout << "Error id not inside symbol table at line: "<< *lexitr << endl;
             return false;
         }
     }else {
-        cout << "Error id not inside symbol table at line: "<< *lexitr << endl;
+        cout << "Error Expected id at line: "<< *lexitr << endl;
         return false;
     }
 }
-
 bool SyntaxAnalyzer::elsepart() {
     if (tokitr != tokens.end() && *tokitr == "t_else") {
         tokitr++; lexitr++;
@@ -311,18 +315,17 @@ int SyntaxAnalyzer::stmt() {
             if (assignstmt())
                 return 1;
         }else if (*tokitr == "t_while") {
-            whilestmt();
-            return 1;
+            if (whilestmt())
+                return 1;
         }else if (*tokitr == "t_input") {
-            inputstmt();
-            return 1;
+            if (inputstmt())
+                return 1;
         }else if (*tokitr == "t_output") {
-            outputstmt();
-            return 1;
-        }else {
-            return -1;
+           if (outputstmt())
+               return 1;
         }
     }
+    return -1;
 }
 
 bool SyntaxAnalyzer::term() {
