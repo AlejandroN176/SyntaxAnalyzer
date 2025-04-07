@@ -1,3 +1,6 @@
+// Alejandro, Marvin, Kevin, Karen
+//
+
 using namespace std;
 #include "SyntaxAnalyzer.h"
 
@@ -14,48 +17,48 @@ SyntaxAnalyzer::SyntaxAnalyzer(istream &infile) {
 }
 
 int SyntaxAnalyzer::vars() {
+    // Karen
     bool moreVars = false;
     string inputLine = *lexitr;
     string dataType;
+
     // Check if initial token is an integer or string, move on to next token if it is.
-    // If it's not, display error and return -1
     if (tokitr != tokens.end() && (*tokitr == "t_integer" || *tokitr == "t_string")) {
         dataType = *lexitr;
         tokitr++; lexitr++;
         inputLine += " " + *lexitr;
+        // Check if token is an id, if it is, add it to the symbol table and move on to next token .
+        if (tokitr != tokens.end() && *tokitr == "t_id") {
+            symboltable.insert(make_pair(*lexitr, dataType));
+            tokitr++; lexitr++;
+            inputLine += " " + *lexitr;
+            // If the next token is a comma, move on to the next token and set moreVars to true.
+            // If the token is a semicolon, return 1
+            cout << "Passed id check in vars. Now checking for comma or semicolon: " << *lexitr << endl;
+            if (tokitr != tokens.end() && *tokitr == "s_comma") {
+                moreVars = true;
+                tokitr++; lexitr++;
+                inputLine += " " + *lexitr;
+            } else if (tokitr != tokens.end() && *tokitr == "s_semi") {
+                cout << "Done in vars: " << inputLine << endl;
+                tokitr++; lexitr++;
+                return 1;
+            } else {
+                cout << "Error in Vars: missing semicolon or comma: " << inputLine << endl;
+            }
+        } else {
+            cout << "Error in Vars: no id found" << inputLine << endl;
+            tokitr++; lexitr++;
+            return -1;
+        }
     } else {
         cout << "Error in Vars: incorrect data type" << inputLine << endl;
         tokitr++; lexitr++;
         return -1;
     }
 
-    // Check if token is an id, if it is move one to next token and increment varCount.
-    // If it's not, display an error and return -1
-    if (tokitr != tokens.end() && *tokitr == "t_id") {
-        symboltable.insert(make_pair(*lexitr, dataType));
-        tokitr++; lexitr++;
-        inputLine += " " + *lexitr;
-    } else {
-        cout << "Error in Vars: no id found" << inputLine << endl;
-        tokitr++; lexitr++;
-        return -1;
-    }
-
-    // If the next token is a comma, move on to the next token and set moreVars to true.
-    // If the token is a semicolon, return 1
-    // If it's neither, display an error and return -1
-    if (tokitr != tokens.end() && *tokitr == "s_comma") {
-        moreVars = true;
-        tokitr++; lexitr++;
-        inputLine += " " + *lexitr;
-    } else if (tokitr != tokens.end() && *tokitr == "s_semi") {
-        tokitr++; lexitr++;
-        return 1;
-    } else {
-        cout << "Error in Vars: missing semicolon or comma: " << inputLine << endl;
-    }
-
     // Check for more vars until a semicolon or an error is found.
+    // Adds new variables to symbol table
     while (moreVars) {
         if (tokitr != tokens.end() && *tokitr == "t_id") {
             symboltable.insert(std::make_pair(*lexitr, dataType));
@@ -70,22 +73,23 @@ int SyntaxAnalyzer::vars() {
                 inputLine += " " + *lexitr;
                 moreVars = false;
             } else {
-                cout << "Error in Vars: missing semicolon: " << inputLine << endl;
                 tokitr++; lexitr++;
                 return -1;
             }
         } else {
-            cout << "Error in Vars: no id found" << inputLine << endl;
             tokitr++; lexitr++;
             return -1;
         }
     }
 
     //return 1 if everything was successful
+    tokitr++; lexitr++;
     return 1;
 }
 
+
 bool SyntaxAnalyzer::inputstmt() {
+    // Karen
     string inputLine = *lexitr;
     if (tokitr != tokens.end() && *tokitr == "t_input") {
         tokitr++; lexitr++;
@@ -93,11 +97,10 @@ bool SyntaxAnalyzer::inputstmt() {
         if (tokitr != tokens.end() && *tokitr == "s_lparen") {
             tokitr++; lexitr++;
             inputLine += " " + *lexitr;
-            if (tokitr != tokens.end() && *tokitr == "t_id") {// add a symbol table check
+            if (tokitr != tokens.end() && *tokitr == "t_id") {
                 tokitr++; lexitr++;
                 inputLine += " " + *lexitr;
                 if (tokitr != tokens.end() && *tokitr == "s_rparen") {
-                    tokitr++; lexitr++;
                     return true;
                 }
                 cout << "Error in InputStmt: " << inputLine << endl;
@@ -114,45 +117,62 @@ bool SyntaxAnalyzer::inputstmt() {
 }
 
 bool SyntaxAnalyzer::expr() {
+    // Karen
+    // Check for simpleexpr()
     if (tokitr != tokens.end() && simpleexpr()) {
+        tokitr++; lexitr++;
+        // Check for logicop()
         if (tokitr != tokens.end() && logicop()) {
             tokitr++; lexitr++;
+            // Check for simpleexpr()
             if (tokitr != tokens.end() && simpleexpr()) {
                 tokitr++; lexitr++;
                 return true;
             }
-        } else {
-            return true;
+            return false;
         }
+        return true;
     }
     return false;
 }
 
 bool SyntaxAnalyzer::whilestmt() {
+    // Karen
+    // Check for while
     if (tokitr != tokens.end() && *tokitr == "t_while") {
         tokitr++; lexitr++;
+        // Check for left parenthesis
         if (tokitr != tokens.end() && *tokitr == "s_lparen") {
             tokitr++; lexitr++;
+            // Check for expr()
             if (tokitr != tokens.end() && expr()) {
-                if (tokitr != tokens.end() && *tokitr == "s_rparen") {
+                tokitr++; lexitr++;
+                // Check for left brace
+                if (tokitr != tokens.end() && *tokitr == "s_lbrace") {
                     tokitr++; lexitr++;
-                    if (tokitr != tokens.end() && *tokitr == "s_lbrace") {
+                    // Check for stmtlist()
+                    if (tokitr != tokens.end() && stmtlist()) {
                         tokitr++; lexitr++;
-                        if (tokitr != tokens.end() && stmtlist()) {
-                            tokitr++; lexitr++;
-                            if (tokitr != tokens.end() && *tokitr == "s_rbrace") {
-                                tokitr++; lexitr++;
-                                return true;
-                            }
+                        // Last check for right brace
+                        if (tokitr != tokens.end() && *tokitr == "s_rbrace") {
+                            return true;
                         }
+                        cout << "Error in whilestmt: expected right brace"  << endl;
+                        return false;
                     }
+                    return false;
                 }
-
+                cout << "Error in whilestmt: expected left brace" << endl;
+                return false;
             }
+            return false;
         }
+        cout << "Error in whilestmt: expected left parenthesis "  << endl;
+        return false;
     }
     return false;
 }
+
 
 bool SyntaxAnalyzer::logicop() {
     if(tokitr != tokens.end() && *tokitr == "s_and"){
