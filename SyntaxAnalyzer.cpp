@@ -354,30 +354,6 @@ bool SyntaxAnalyzer::stmtlist() {
     return true;
 }
 
-// bool SyntaxAnalyzer::parse(){
-//     tokitr = tokens.begin();
-//     lexitr = lexemes.begin();
-//     bool success = false;
-//     if (vdec()){
-//         if (tokitr != tokens.end() && *tokitr == "t_main"){
-//             tokitr++; lexitr++;
-//             if (tokitr != tokens.end() && *tokitr == "s_lbrace"){
-//                 tokitr++; lexitr++;
-//                 cout << "Vdec intialized and main{ intialized"<< endl;
-//                 //calls STMTLIST
-//                 while (stmtlist()){
-//
-//                 }
-//
-//             }
-//
-//         }
-//
-//     }
-//
-// }
-
-
 bool SyntaxAnalyzer::parse() {
     tokitr = tokens.begin();
     lexitr = lexemes.begin();
