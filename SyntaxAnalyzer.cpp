@@ -309,8 +309,8 @@ bool SyntaxAnalyzer::relop() {
 int SyntaxAnalyzer::stmt() {
     if (tokitr != tokens.end()) {
         if (*tokitr == "t_if") {
-            ifstmt();
-            return 1;
+            if (ifstmt())
+                return 1;
         }else if (*tokitr == "t_id") {
             if (assignstmt())
                 return 1;
