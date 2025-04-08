@@ -41,6 +41,7 @@ int SyntaxAnalyzer::vars() {
             } else if (tokitr != tokens.end() && *tokitr == "s_semi") {
                 cout << "Done in vars: " << inputLine << endl;
                 tokitr++; lexitr++;
+                if (tokitr != tokens.end() && (*tokitr != "t_integer" || *tokitr != "t_string"))
                 return 1;
             } else {
                 cout << "Error in Vars: missing semicolon or comma: " << inputLine << endl;
@@ -69,7 +70,12 @@ int SyntaxAnalyzer::vars() {
             } else if (tokitr != tokens.end() && *tokitr == "s_semi") {
                 tokitr++; lexitr++;
                 inputLine += " " + *lexitr;
-                moreVars = false;
+                if (tokitr != tokens.end() && (*tokitr != "t_integer" && *tokitr != "t_string")) {
+                    moreVars = false;
+                }else {
+                    dataType = *lexitr;
+                    tokitr++; lexitr++;
+                }
             } else {
                 cout << "Error in vars: expected comma or semicolon: " << inputLine << endl;
                 return -1;
@@ -81,7 +87,6 @@ int SyntaxAnalyzer::vars() {
     }
 
     //return 1 if everything was successful
-    tokitr++; lexitr++;
     return 1;
 }
 
@@ -108,6 +113,7 @@ bool SyntaxAnalyzer::inputstmt() {
                 }
                 // Check for the final right parenthesis
                 if (tokitr != tokens.end() && *tokitr == "s_rparen") {
+                    tokitr++; lexitr++;
                     return true;
                 }
                 cout << "Error in InputStmt: right parenthesis not found" << inputLine << endl;
@@ -128,7 +134,6 @@ bool SyntaxAnalyzer::expr() {
     // Karen
     // Check for simpleexpr()
     if (tokitr != tokens.end() && simpleexpr()) {
-        tokitr++; lexitr++;
         // Check for logicop()
         if (tokitr != tokens.end() && logicop()) {
             tokitr++; lexitr++;
@@ -194,7 +199,7 @@ bool SyntaxAnalyzer::whilestmt() {
 }
 
 bool SyntaxAnalyzer::logicop() {
-    // Marvin 
+    // Marvin
     if(tokitr != tokens.end() && *tokitr == "s_and"){
         tokitr++; lexitr++;
         return true;
@@ -240,15 +245,20 @@ bool SyntaxAnalyzer::arithop() {
 }
 
 bool SyntaxAnalyzer::assignstmt() {
-    // Alejandro 
+    // Alejandro
     if (tokitr != tokens.end() && *tokitr == "t_id") {
-        int found = symboltable.count(*lexitr);
-        if (found != 0) {
+        if (symboltable.contains(*lexitr)) {
             tokitr++; lexitr++;
             if (tokitr != tokens.end() && *tokitr == "s_assign"){
                 tokitr++; lexitr++;
                 if (tokitr != tokens.end() && expr()) {
-                    return true;
+                    if (tokitr != tokens.end() && *tokitr == "s_semi") {
+                        tokitr++; lexitr++;
+                        return true;
+                    }else {
+                        cout<< "Error expected semicolon at line: " << *lexitr << endl;
+                    }
+
                 }else {
                     cout << "Error expected valid expression at line: "<< *lexitr << endl;
                     return false;
@@ -287,7 +297,7 @@ bool SyntaxAnalyzer::elsepart() {
 
 bool SyntaxAnalyzer::vdec() {
     // Alejandro
-    while (tokitr != tokens.end() && *tokitr == "t_var") {
+    if(tokitr != tokens.end() && *tokitr == "t_var") {
         tokitr++; lexitr++;
         if (vars() != 1) {
             return false;
@@ -331,7 +341,6 @@ bool SyntaxAnalyzer::outputstmt() {
         if (tokitr != tokens.end() && *tokitr == "s_lparen") {
             tokitr++; lexitr++;
         	if (tokitr != tokens.end() && expr() || *tokitr == "t_text") {
-            	tokitr++; lexitr++;
             	if (tokitr != tokens.end() && *tokitr == "s_rparen") {
             	    tokitr++; lexitr++;
             	    return true;
@@ -398,7 +407,7 @@ bool SyntaxAnalyzer::term() {
 }
 
 bool SyntaxAnalyzer::stmtlist() {
-    // Kevin 
+    // Kevin
     bool stmtContinue = true;
     while (tokitr != tokens.end() && stmtContinue) {
         if (stmt() != 1) {
@@ -415,7 +424,9 @@ SyntaxAnalyzer::SyntaxAnalyzer(istream &infile) {
     }
     char semicolon;
     string token, lexeme;
-    while (infile >> token >> semicolon >> lexeme) {
+    while (infile >> token >> semicolon) {
+        getline(infile >> ws, lexeme);
+        cout << token << " " << lexeme << endl;
         tokens.push_back(token);
         lexemes.push_back(lexeme);
     }
