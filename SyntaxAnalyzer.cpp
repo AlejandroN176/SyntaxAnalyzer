@@ -189,21 +189,18 @@ bool SyntaxAnalyzer::logicop() {
 
 bool SyntaxAnalyzer::simpleexpr() {
         if (tokitr != tokens.end() && term()) {
-            if (tokitr != tokens.end() && *tokitr == "s_semi") {
-                tokitr++; lexitr++;
-                return true;
-            }
             if (tokitr != tokens.end() && (relop() || arithop())) {
                 if (tokitr != tokens.end() && term()) {
                     return true;
-                }
+                }else cout << "Error: expected term symbol at line: " << *lexitr << endl;
             }
             else {
                 return true;
             }
-        }
+        }else cout << "Error: expected term symbol at line: " << *lexitr << endl;
     return false;
 }
+
 bool SyntaxAnalyzer::arithop() {
     if (tokitr != tokens.end() && *tokitr == "s_plus"){
         tokitr++; lexitr++;
@@ -308,10 +305,10 @@ bool SyntaxAnalyzer::outputstmt() {
             	if (tokitr != tokens.end() && *tokitr == "s_rparen") {
             	    tokitr++; lexitr++;
             	    return true;
-            	}
-        	}
-        }
-    }
+            	}else cout << "Error: expected right parenthesis symbol at line: " << *lexitr << endl;
+        	}else cout << "Error: expected text or expr symbol at line: " << *lexitr << endl;
+        }else cout << "Error: expected left parenthesis symbol at line: " << *lexitr << endl;
+    }else cout << "Error: expected output method at line: " << *lexitr << endl;
         return false;
 }
 
