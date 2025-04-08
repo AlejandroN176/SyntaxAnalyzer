@@ -217,12 +217,12 @@ bool SyntaxAnalyzer::simpleexpr() {
             if (tokitr != tokens.end() && (relop() || arithop())) {
                 if (tokitr != tokens.end() && term()) {
                     return true;
-                }else cout << "Error: expected term symbol at line: " << *lexitr << endl;
+                }
             }
             else {
                 return true;
             }
-        }else cout << "Error: expected term symbol at line: " << *lexitr << endl;
+        }
     return false;
 }
 
@@ -390,14 +390,17 @@ bool SyntaxAnalyzer::term() {
         tokitr++; lexitr++;
         return true;
     }
-    else if (tokitr != tokens.end() && *tokitr == "t_text"){
+    if (tokitr != tokens.end() && *tokitr == "t_text"){
         tokitr++; lexitr++;
         return true;
     }
-    else if (tokitr != tokens.end() && *tokitr == "t_number"){
+    if (tokitr != tokens.end() && *tokitr == "t_number"){
         tokitr++; lexitr++;
         return true;
-    }else if (expr()){
+    }else if (tokitr != tokens.end() && *tokitr == "s_semi"){
+        cout << "expected valid term at line: "<< *lexitr << endl;
+        return false;
+    }else if(expr()){
         tokitr++; lexitr++;
         return true;
     }
