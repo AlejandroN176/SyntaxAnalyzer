@@ -33,7 +33,6 @@ int SyntaxAnalyzer::vars() {
             inputLine += " " + *lexitr;
             // If the next token is a comma, move on to the next token and set moreVars to true.
             // If the token is a semicolon, return 1
-            cout << "Passed id check in vars. Now checking for comma or semicolon: " << *lexitr << endl;
             if (tokitr != tokens.end() && *tokitr == "s_comma") {
                 moreVars = true;
                 tokitr++; lexitr++;
@@ -426,7 +425,6 @@ SyntaxAnalyzer::SyntaxAnalyzer(istream &infile) {
     string token, lexeme;
     while (infile >> token >> semicolon) {
         getline(infile >> ws, lexeme);
-        cout << token << " " << lexeme << endl;
         tokens.push_back(token);
         lexemes.push_back(lexeme);
     }
