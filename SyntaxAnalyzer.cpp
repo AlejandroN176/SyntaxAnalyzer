@@ -1,20 +1,19 @@
 // Alejandro, Marvin, Kevin, Karen
-//
+/*
+ * This code analyzes a file of tokens and lexemes that were derived from a source file.
+ * The first thing our code does is populate the token and lexeme vectors.
+ * Then there is a call to the parse function, which oversees parsing through the token/lexeme vectors,
+ * and ensuring that they follow the grammar by checking for specific tokens and
+ * calling on helper functions in the particular order of the grammar.
+ * When a helper function returns true, it indicates that no error has been found and the code proceeds.
+ * When false is returned, the code ends and
+ * specific error messages are displayed to help locate the incorrect token/lexeme.
+ * If the token and lexeme vectors have been successfully parsed,
+ * the symbol table map that was populated within the code is displayed along with a success message.
+ */
 
 using namespace std;
 #include "SyntaxAnalyzer.h"
-
-SyntaxAnalyzer::SyntaxAnalyzer(istream &infile) {
-    if (!infile) {
-        cout << "sourceLexemes.txt not found" << endl;
-    }
-    char semicolon;
-    string token, lexeme;
-    while (infile >> token >> semicolon >> lexeme) {
-        tokens.push_back(token);
-        lexemes.push_back(lexeme);
-    }
-}
 
 int SyntaxAnalyzer::vars() {
     // Karen
@@ -87,31 +86,41 @@ int SyntaxAnalyzer::vars() {
     return 1;
 }
 
-
 bool SyntaxAnalyzer::inputstmt() {
     // Karen
     string inputLine = *lexitr;
+    // Check for input
     if (tokitr != tokens.end() && *tokitr == "t_input") {
         tokitr++; lexitr++;
         inputLine += " " + *lexitr;
+        // Check for left parenthesis
         if (tokitr != tokens.end() && *tokitr == "s_lparen") {
             tokitr++; lexitr++;
             inputLine += " " + *lexitr;
+            // Check for id
             if (tokitr != tokens.end() && *tokitr == "t_id") {
-                tokitr++; lexitr++;
-                inputLine += " " + *lexitr;
+                // Make sure variable used was declared
+                if (symboltable.contains(*lexitr)) {
+                    tokitr++; lexitr++;
+                    inputLine += " " + *lexitr;
+                } else {
+                    cout << "Error in InputStmt: undeclared variable used" << endl;
+                    return false;
+                }
+                // Check for the final right parenthesis
                 if (tokitr != tokens.end() && *tokitr == "s_rparen") {
                     return true;
                 }
-                cout << "Error in InputStmt: " << inputLine << endl;
+                cout << "Error in InputStmt: right parenthesis not found" << inputLine << endl;
+
             } else {
-                cout << "Error in InputStmt: " << inputLine << endl;
+                cout << "Error in InputStmt: id not found " << inputLine << endl;
             }
         } else {
-            cout << "Error in InputStmt: " << inputLine << endl;
+            cout << "Error in InputStmt: left parenthesis not found " << inputLine << endl;
         }
     } else {
-        cout << "Error in InputStmt: " << inputLine << endl;
+        cout << "Error in InputStmt: input statement not found" << inputLine << endl;
     }
     return false;
 }
@@ -129,52 +138,64 @@ bool SyntaxAnalyzer::expr() {
                 tokitr++; lexitr++;
                 return true;
             }
+            cout << "Error in Expr: problem with simpleeexpr()" << endl;
             return false;
         }
+        // true is returned because logicop() and simpleeexpr() are optional
         return true;
     }
+    cout << "Error in Expr: problem with simpleexpr()" << endl;
     return false;
 }
 
 bool SyntaxAnalyzer::whilestmt() {
     // Karen
     // Check for while
+    string inputLine = *lexitr;
     if (tokitr != tokens.end() && *tokitr == "t_while") {
         tokitr++; lexitr++;
+        inputLine += " " + *lexitr;
         // Check for left parenthesis
         if (tokitr != tokens.end() && *tokitr == "s_lparen") {
             tokitr++; lexitr++;
+            inputLine += " " + *lexitr;
             // Check for expr()
             if (tokitr != tokens.end() && expr()) {
                 tokitr++; lexitr++;
+                inputLine += "[...expr] " + *lexitr;
                 // Check for left brace
                 if (tokitr != tokens.end() && *tokitr == "s_lbrace") {
                     tokitr++; lexitr++;
+                    inputLine += " " + *lexitr;
                     // Check for stmtlist()
                     if (tokitr != tokens.end() && stmtlist()) {
                         tokitr++; lexitr++;
+                        inputLine += "[... stmtlist] " + *lexitr;
                         // Last check for right brace
                         if (tokitr != tokens.end() && *tokitr == "s_rbrace") {
                             return true;
                         }
-                        cout << "Error in whilestmt: expected right brace"  << endl;
+                        cout << "Error in whilestmt: expected right brace"  << inputLine <<endl;
                         return false;
                     }
+                    cout << "Error in whilestmt: problem with stmtlist()" << inputLine << endl;
                     return false;
                 }
-                cout << "Error in whilestmt: expected left brace" << endl;
+                cout << "Error in whilestmt: expected left brace" << inputLine << endl;
                 return false;
             }
+            cout << "Error in whilestmt: problem with expr()" << inputLine << endl;
             return false;
         }
-        cout << "Error in whilestmt: expected left parenthesis "  << endl;
+        cout << "Error in whilestmt: expected left parenthesis "  << inputLine << endl;
         return false;
     }
+    cout << "Error in whilestmt: while statement expected" << inputLine << endl;
     return false;
 }
 
-
 bool SyntaxAnalyzer::logicop() {
+    // Marvin 
     if(tokitr != tokens.end() && *tokitr == "s_and"){
         tokitr++; lexitr++;
         return true;
@@ -188,6 +209,7 @@ bool SyntaxAnalyzer::logicop() {
 
 
 bool SyntaxAnalyzer::simpleexpr() {
+    // Kevin
         if (tokitr != tokens.end() && term()) {
             if (tokitr != tokens.end() && (relop() || arithop())) {
                 if (tokitr != tokens.end() && term()) {
@@ -202,6 +224,7 @@ bool SyntaxAnalyzer::simpleexpr() {
 }
 
 bool SyntaxAnalyzer::arithop() {
+    // Marvin
     if (tokitr != tokens.end() && *tokitr == "s_plus"){
         tokitr++; lexitr++;
         return true;
@@ -216,7 +239,9 @@ bool SyntaxAnalyzer::arithop() {
     }
     return false;
 }
+
 bool SyntaxAnalyzer::assignstmt() {
+    // Alejandro 
     if (tokitr != tokens.end() && *tokitr == "t_id") {
         int found = symboltable.count(*lexitr);
         if (found != 0) {
@@ -242,7 +267,9 @@ bool SyntaxAnalyzer::assignstmt() {
         return false;
     }
 }
+
 bool SyntaxAnalyzer::elsepart() {
+    // Alejandro
     if (tokitr != tokens.end() && *tokitr == "t_else") {
         tokitr++; lexitr++;
         if (tokitr != tokens.end() && *tokitr == "s_lbrace") {
@@ -258,8 +285,9 @@ bool SyntaxAnalyzer::elsepart() {
     //it can be nothing so return true?
     return true;
 }
-bool SyntaxAnalyzer::vdec() {
 
+bool SyntaxAnalyzer::vdec() {
+    // Alejandro
     while (tokitr != tokens.end() && *tokitr == "t_var") {
         tokitr++; lexitr++;
         if (vars() != 1) {
@@ -270,6 +298,7 @@ bool SyntaxAnalyzer::vdec() {
 }
 
 bool SyntaxAnalyzer::ifstmt() {
+    // Marvin
     bool flag = false;
     if (tokitr != tokens.end() && *tokitr == "t_if") {
         tokitr++; lexitr++;
@@ -295,7 +324,9 @@ bool SyntaxAnalyzer::ifstmt() {
     }
     return flag;
 }
+
 bool SyntaxAnalyzer::outputstmt() {
+    // Kevin
     if (tokitr != tokens.end() && *tokitr == "t_output") {
         tokitr++; lexitr++;
         if (tokitr != tokens.end() && *tokitr == "s_lparen") {
@@ -313,6 +344,7 @@ bool SyntaxAnalyzer::outputstmt() {
 }
 
 bool SyntaxAnalyzer::relop() {
+    // Kevin
     if (tokitr != tokens.end() && *tokitr == "s_ne" || *tokitr == "s_eq" || *tokitr == "s_gt" || *tokitr == "s_lt") {
         tokitr++; lexitr++;
         return true;
@@ -322,8 +354,8 @@ bool SyntaxAnalyzer::relop() {
     }
 }
 
-
 int SyntaxAnalyzer::stmt() {
+    // Alejandro
     if (tokitr != tokens.end()) {
         if (*tokitr == "t_if") {
             if (ifstmt())
@@ -346,6 +378,7 @@ int SyntaxAnalyzer::stmt() {
 }
 
 bool SyntaxAnalyzer::term() {
+    // Marvin
     if (tokitr != tokens.end() && *tokitr == "t_id"){
         tokitr++; lexitr++;
         return true;
@@ -364,7 +397,9 @@ bool SyntaxAnalyzer::term() {
     tokitr++; lexitr++;
     return false;
 }
+
 bool SyntaxAnalyzer::stmtlist() {
+    // Kevin 
     bool stmtContinue = true;
     while (tokitr != tokens.end() && stmtContinue) {
         if (stmt() != 1) {
@@ -374,7 +409,21 @@ bool SyntaxAnalyzer::stmtlist() {
     return true;
 }
 
+SyntaxAnalyzer::SyntaxAnalyzer(istream &infile) {
+    // Alejandro, Marvin, Kevin, Karen
+    if (!infile) {
+        cout << "sourceLexemes.txt not found" << endl;
+    }
+    char semicolon;
+    string token, lexeme;
+    while (infile >> token >> semicolon >> lexeme) {
+        tokens.push_back(token);
+        lexemes.push_back(lexeme);
+    }
+}
+
 bool SyntaxAnalyzer::parse() {
+    // Alejandro, Marvin, Kevin, Karen
     tokitr = tokens.begin();
     lexitr = lexemes.begin();
     bool success = false;
