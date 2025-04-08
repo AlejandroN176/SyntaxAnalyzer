@@ -51,8 +51,7 @@ int SyntaxAnalyzer::vars() {
             return -1;
         }
     } else {
-        cout << "Error in Vars: incorrect data type" << inputLine << endl;
-        tokitr++; lexitr++;
+        cout << "Error in Vars: expected data type" << inputLine << endl;
         return -1;
     }
 
@@ -72,11 +71,11 @@ int SyntaxAnalyzer::vars() {
                 inputLine += " " + *lexitr;
                 moreVars = false;
             } else {
-                tokitr++; lexitr++;
+                cout << "Error in vars: expected comma or semicolon: " << inputLine << endl;
                 return -1;
             }
         } else {
-            tokitr++; lexitr++;
+            cout << "Error in vars: expected an id: " << inputLine << endl;
             return -1;
         }
     }
